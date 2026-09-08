@@ -1,0 +1,111 @@
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-type1-sim}Empirical Type I error rates across
+inferential methods in the simulation study (\(\alpha = 0.05\)).
+Rejection rates for testing the focal moderator coefficient
+(\(\beta_X = 0\)) are averaged over sample size per group (\(n\)) and
+moderator correlation (\(\rho_{XZ}\)), shown as a function of the number
+of studies (\(k\)), baseline heterogeneity (\(\tau_0^2\)), scale
+heterogeneity parameter (\(\zeta\)), and fitted model type
+(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}). Dotted
+horizontal lines indicate the 95\% Monte Carlo confidence interval
+around nominal \(\alpha = 0.05\). The Wald test is omitted due to
+substantial liberal inflation.}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{pimma_files/figure-pdf/fig-type1-sim-1.pdf}}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-power-sim}Empirical power across inferential methods
+in the simulation study (\(\alpha = 0.05\), \(\beta_X = 0.20\)).
+Rejection rates for testing the focal moderator coefficient under the
+alternative hypothesis are averaged over sample size per group (\(n\))
+and moderator correlation (\(\rho_{XZ}\)), shown as a function of the
+number of studies (\(k\)), baseline heterogeneity (\(\tau_0^2\)), scale
+heterogeneity parameter (\(\zeta\)), and fitted model type
+(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}).}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{pimma_files/figure-pdf/fig-power-sim-1.pdf}}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-vol-cor-plot}Volcano plot and correlation structure
+of specification-level statistics in the CBT depression multiverse
+(\(S = 438\)). The left panel shows the relationship between pooled
+effect size estimates (Hedges' \(g\)) and adjusted \(-\log_{10}(p)\)
+values from step-down max-\(T\) correction. Points are categorized by
+significance status (significant after step-down max-\(T\), significant
+before adjustment only, or non-significant). The horizontal dotted line
+marks the \(\alpha = 0.05\) threshold. The right panel displays the
+pairwise correlation matrix of signed standardized statistics (top) and
+the empirical density distribution of off-diagonal correlation values
+(bottom).}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{pimma_files/figure-pdf/fig-vol-cor-plot-1.pdf}}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-specification-curve}Multiverse of meta-analytic
+estimates and analytical specifications. Specifications are ordered by
+the pooled Hedges' \(g\). The upper panel shows the estimated effect for
+each specification and whether it was significant before and after
+step-down max-\(T\) correction. The dashed horizontal line indicates the
+median pooled Hedges' \(g\) across specifications, while the dotted line
+indicates the null value of zero. The lower panel shows the analytical
+decisions defining each specification.}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{pimma_files/figure-pdf/fig-specification-curve-1.pdf}}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-correlation-structure}Dependence among
+specification-level signed standardized statistics. The left panel shows
+their pairwise correlation matrix under the common sign-flipping
+transformations. The right panel shows the distribution of the
+off-diagonal pairwise correlations.}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{pimma_files/figure-pdf/fig-correlation-structure-1.pdf}}
+
+}
+
+\end{figure*}

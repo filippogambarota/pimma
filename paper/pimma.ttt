@@ -1,0 +1,96 @@
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+{\caption{{Simulation grid parameter space, generating values, and
+fitted meta-regression models.}{\label{tbl-sim-grid}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.7895}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2105}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Component
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Values
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Focal moderator & \(n_X = 1\) \\
+Nuisance moderator & \(n_Z = 1\) \\
+Intercept & \(\beta_0 = 0\) \\
+Focal coefficient & \(\beta_X \in \{0, 0.2\}\) \\
+Nuisance coefficient & \(\gamma_Z = 0.2\) \\
+Moderator correlation & \(\rho_{XZ} \in \{0, 0.5, 0.8\}\) \\
+Baseline heterogeneity & \(\tau_0^2 \in \{0, 0.05\}\) \\
+Scale coefficient & \(\zeta \in \{0, \log(1.5), \log(2)\}\) if
+\(\tau_0^2 = 0.05\); \(\zeta = 0\) if \(\tau_0^2 = 0\) \\
+Number of studies & \(k \in \{10, 30, 60, 80\}\) \\
+Sample size per group & \(n \in \{15, 40, 80\}\) \\
+Fitted meta-regression model & EE or RE--REML \\
+Monte Carlo replications & 5,000 per condition \\
+\end{longtable}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+{\caption{{Analytical decisions and corresponding levels defining the
+multiverse of specifications for the CBT depression
+application.}{\label{tbl-application-grid}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Specification decision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Levels
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Control condition & Waitlist; care as usual; unrestricted \\
+Risk of bias & Low risk only; low risk or some concerns; unrestricted \\
+Treatment format & Individual; group; guided self-help; unrestricted \\
+Outcome rater & Clinician-rated; self-reported; unrestricted \\
+Within-study correlation & \(\rho = .30\), \(.50\), or \(.70\) \\
+Heterogeneity estimator & Restricted maximum likelihood;
+DerSimonian--Laird \\
+\end{longtable}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+{\caption{{Specification-level inferential results across the CBT
+depression multiverse (\(S = 438\)), comparing unadjusted score tests,
+PIMMA step-down max-\(T\) post-selection inference, and RVE with Holm
+multiplicity adjustment.}{\label{tbl-inference-comparison}}}
+\vspace{-20pt}}
+
+\begin{longtable}[]{@{}lcc@{}}
+\toprule\noalign{}
+Method & Rejected specifications & Percentage (\%) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Unadjusted flipmeta & 426 & 97.3 \\
+Step-down max-T & 378 & 86.3 \\
+RVE + Holm & 260 & 59.4 \\
+\end{longtable}
+
+\end{table*}
