@@ -493,7 +493,7 @@ The main manuscript reports simulation results averaged over study sample size a
 
 ```{r}
 #| label: fig-type1-detailed
-#| fig-cap: "Empirical Type I error rates across study sample sizes and moderator correlations. The horizontal dotted line indicates the nominal significance level of .05. Wald is omitted for readability because it showed substantial Type I error inflation in several conditions."
+#| fig-cap: "Empirical Type I error rates across study sample sizes and moderator correlations. The horizontal dotted line indicates the nominal significance level of .05. Wald is omitted for readability because it showed substantial Type I error inflation in several conditions. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
 #| fig-width: 11
 #| fig-height: 9
 
@@ -502,19 +502,17 @@ type1_supp |>
     inf != "Wald"
   ) |>
   mutate(
-    rho_label = paste0(
-      "rho[XZ] = ",
+    condition_label = paste0(
+      "τ² = ",
+      tau2,
+      ", ζ = ",
+      round(zeta, 2),
+      "\nρ = ",
       rXZ
     ),
     n_label = paste0(
       "n = ",
       n
-    ),
-    tau_label = paste0(
-      "tau0^2 = ",
-      tau2,
-      ", zeta = ",
-      round(zeta, 2)
     )
   ) |>
   ggplot(
@@ -537,7 +535,8 @@ type1_supp |>
     size = 1.5
   ) +
   facet_grid(
-    tau_label + rho_label ~ method + n_label
+    condition_label ~ method + n_label,
+    switch = "y"
   ) +
   labs(
     x = "Number of studies (k)",
@@ -549,7 +548,12 @@ type1_supp |>
     base_size = 10
   ) +
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    strip.placement = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,
+      hjust = 1
+    )
   )
 ```
 
@@ -561,7 +565,7 @@ As in the main manuscript, power is shown only for method-condition combinations
 
 ```{r}
 #| label: fig-power-detailed
-#| fig-cap: "Empirical power across study sample sizes and moderator correlations. Results are shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition."
+#| fig-cap: "Empirical power across study sample sizes and moderator correlations. Results are shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
 #| fig-width: 11
 #| fig-height: 9
 
@@ -570,19 +574,17 @@ power_supp |>
     inf != "Wald"
   ) |>
   mutate(
-    rho_label = paste0(
-      "rho[XZ] = ",
+    condition_label = paste0(
+      "τ² = ",
+      tau2,
+      ", ζ = ",
+      round(zeta, 2),
+      "\nρ = ",
       rXZ
     ),
     n_label = paste0(
       "n = ",
       n
-    ),
-    tau_label = paste0(
-      "tau0^2 = ",
-      tau2,
-      ", zeta = ",
-      round(zeta, 2)
     )
   ) |>
   ggplot(
@@ -600,7 +602,8 @@ power_supp |>
     size = 1.5
   ) +
   facet_grid(
-    tau_label + rho_label ~ method + n_label
+    condition_label ~ method + n_label,
+    switch = "y"
   ) +
   labs(
     x = "Number of studies (k)",
@@ -612,7 +615,12 @@ power_supp |>
     base_size = 10
   ) +
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    strip.placement = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,
+      hjust = 1
+    )
   )
 ```
 
