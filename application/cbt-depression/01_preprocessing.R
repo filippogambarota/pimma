@@ -3,7 +3,9 @@ rm(list = ls())
 library(tidyr)
 library(dplyr)
 
-raw <- readxl::read_excel("application/cbt-depression/data-depression-psyctr-2022.xlsx")
+raw <- readxl::read_excel(
+  "application/cbt-depression/data/data-depression-psyctr-2022.xlsx"
+)
 
 dat <- raw |>
   mutate(
@@ -100,4 +102,7 @@ dat <- raw |>
     vi
   )
 
-saveRDS(dat, "application/cbt-depression/cbt-dep-clean.rds")
+saveRDS(
+  dat,
+  "application/cbt-depression/results/cbt-dep-clean.rds"
+)
