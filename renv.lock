@@ -622,7 +622,7 @@
     },
     "flipmeta": {
       "Package": "flipmeta",
-      "Version": "0.1.0",
+      "Version": "0.1.1",
       "Source": "GitHub",
       "Title": "Robust Score Tests for Meta-Analysis Using Sign Flips",
       "Authors@R": "c(person(\"Filippo\", \"Gambarota\", email = \"filippo.gambarota@unipd.it\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0002-6666-1747\")), person(\"Livio\", \"Finos\", email = \"livio.finos@unipd.it\", role = c(\"ctb\"), comment = c(ORCID = \"0000-0003-3181-8078\")), person(\"Matteo\", \"Manente\", email = \"matteo.manente.3@phd.unipd.it\", role = c(\"ctb\"), comment = c(ORCID = \"0009-0009-3246-3476\")))",
@@ -652,7 +652,7 @@
       "RemoteUsername": "filippogambarota",
       "RemoteRepo": "flipmeta",
       "RemoteRef": "main",
-      "RemoteSha": "0d29404560f21f50da43a0fde0758d13e5f19cef"
+      "RemoteSha": "45be7d3628169a63768527bc8336b219335556ec"
     },
     "flipscores": {
       "Package": "flipscores",
