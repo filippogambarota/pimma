@@ -73,3 +73,5 @@ docs/paper/*_files/
 
 # Rsync backup files
 .rsync-backup/
+
+submission/
