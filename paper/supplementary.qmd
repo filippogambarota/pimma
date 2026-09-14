@@ -1,0 +1,634 @@
+---
+title: "Supplementary Materials"
+
+format:
+  apaquarto-pdf:
+    toc: true
+    toc-depth: 2
+
+author:
+  - name: Matteo Manente
+    affiliations:
+      - name: University of Padova
+        id: 1
+        department: Department of Developmental Psychology and Socialization
+        address: Via Venezia 8
+        city: Padova
+        state: Italy
+        postal-code: 35131
+
+  - name: Livio Finos
+    affiliations:
+      - name: University of Padova
+        id: 2
+        department: Department of Statistical Sciences
+        address: Via Battisti 241
+        city: Padova
+        state: Italy
+        postal-code: 35121
+
+  - name: Gianmarco Altoè
+    affiliations:
+      - ref: 1
+
+  - name: Filippo Gambarota
+    affiliations:
+      - ref: 1
+    corresponding: true
+    email: filippo.gambarota@unipd.it
+
+bibliography:
+  - "pimma.bib"
+  - "references.bib"
+
+floatsintext: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(metafor)
+library(here)
+library(ggh4x)
+library(flipmeta)
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  echo = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  dev = "cairo_pdf"
+)
+
+mtheme <- function() {
+  theme_minimal(16) +
+    theme(
+      legend.position = "bottom"
+    )
+}
+
+theme_set(mtheme())
+
+# -----------------------------------------------------------------------
+# Reproducibility information
+# -----------------------------------------------------------------------
+
+operating_system <- paste(
+  Sys.info()[["sysname"]],
+  Sys.info()[["release"]],
+  Sys.info()[["machine"]]
+)
+
+git_commit <- tryCatch(
+  system2(
+    "git",
+    c("rev-parse", "HEAD"),
+    stdout = TRUE
+  ),
+  error = function(e) NA_character_
+)
+
+quarto_version <- tryCatch(
+  system2(
+    "quarto",
+    "--version",
+    stdout = TRUE
+  ),
+  error = function(e) NA_character_
+)
+
+software_versions <- tibble(
+  Software = c(
+    "R",
+    "Quarto",
+    "metafor",
+    "flipmeta",
+    "flipscores",
+    "dplyr",
+    "tidyr",
+    "ggplot2"
+  ),
+  Version = c(
+    paste0(
+      R.version$major,
+      ".",
+      R.version$minor
+    ),
+    quarto_version,
+    as.character(packageVersion("metafor")),
+    as.character(packageVersion("flipmeta")),
+    as.character(packageVersion("flipscores")),
+    as.character(packageVersion("dplyr")),
+    as.character(packageVersion("tidyr")),
+    as.character(packageVersion("ggplot2"))
+  )
+)
+
+# -----------------------------------------------------------------------
+# Simulation results
+# -----------------------------------------------------------------------
+
+sim <- readRDS(
+  here::here(
+    "simulation",
+    "res-clean.rds"
+  )
+)
+
+remove_redundant <- function(data, cols = NULL) {
+
+  cols <- if (is.null(cols)) names(data) else cols
+
+  keep <- rep(
+    TRUE,
+    ncol(data)
+  )
+
+  names(keep) <- names(data)
+
+  keep[cols] <- sapply(
+    data[cols],
+    function(x) length(unique(x)) > 1
+  )
+
+  data[, keep, drop = FALSE]
+}
+
+sim_long <- sim |>
+  remove_redundant() |>
+  pivot_longer(
+    starts_with("pval"),
+    names_to = "inf",
+    values_to = "pval"
+  )
+
+inf_lbl <- c(
+  "pval_adhoc" = "mKH",
+  "pval_knha" = "KH",
+  "pval_rob" = "RVE",
+  "pval_flip" = "flipmeta",
+  "pval_wald" = "Wald"
+)
+
+# Type I error by individual simulation condition
+
+type1_supp <- sim_long |>
+  filter(
+    bX == 0
+  ) |>
+  group_by(
+    rXZ,
+    tau2,
+    zeta,
+    k,
+    n,
+    method,
+    inf
+  ) |>
+  summarise(
+    rejection_rate = mean(
+      pval <= 0.05,
+      na.rm = TRUE
+    ),
+    nsim = n(),
+    .groups = "drop"
+  ) |>
+  mutate(
+    method = ifelse(
+      method == "EE",
+      "EE",
+      "RE--REML"
+    ),
+    inf = inf_lbl[inf]
+  )
+
+# Identify method-condition combinations with adequate Type I error control
+
+type1_ok <- type1_supp |>
+  mutate(
+    type1_upper = 0.05 +
+      qnorm(0.975) *
+      sqrt(
+        0.05 * 0.95 / nsim
+      ),
+    type1_ok = rejection_rate <= type1_upper
+  ) |>
+  select(
+    rXZ,
+    tau2,
+    zeta,
+    k,
+    n,
+    method,
+    inf,
+    type1_ok
+  )
+
+# Power by individual simulation condition
+
+power_supp <- sim_long |>
+  filter(
+    bX != 0
+  ) |>
+  group_by(
+    rXZ,
+    tau2,
+    zeta,
+    k,
+    n,
+    method,
+    inf
+  ) |>
+  summarise(
+    power = mean(
+      pval <= 0.05,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) |>
+  mutate(
+    method = ifelse(
+      method == "EE",
+      "EE",
+      "RE--REML"
+    ),
+    inf = inf_lbl[inf]
+  ) |>
+  left_join(
+    type1_ok,
+    by = c(
+      "rXZ",
+      "tau2",
+      "zeta",
+      "k",
+      "n",
+      "method",
+      "inf"
+    )
+  ) |>
+  filter(
+    type1_ok
+  )
+
+# -----------------------------------------------------------------------
+# CBT multiverse
+# -----------------------------------------------------------------------
+
+multi <- readRDS(
+  here::here(
+    "application",
+    "cbt-depression",
+    "results",
+    "cbt-dep-multi.rds"
+  )
+)
+```
+
+# S1. Reproducibility and software
+
+All analyses were conducted in R. Meta-analytic models were fitted using `metafor`, and score-based sign-flipping inference was performed using `flipmeta`. Random-number seeds were fixed for all simulation and resampling procedures.
+
+The source code used to generate the simulations, empirical application, figures, and tables is available in the accompanying repository. The manuscript and supplementary materials were generated directly from Quarto source files.
+
+```{r}
+#| label: tbl-software
+#| tbl-cap: "Main software versions used to reproduce the analyses."
+
+software_versions |>
+  knitr::kable(
+    align = c(
+      "l",
+      "l"
+    )
+  )
+```
+
+The supplementary materials were rendered on `r operating_system` from Git commit `r git_commit`.
+
+# S2. Computational comparison with permutation testing
+
+The main manuscript notes that score sign flipping avoids repeated refitting of the complete meta-regression model. We illustrate the practical computational difference using a mixed-effects meta-regression with 100 independent studies and three predictors.
+
+Both procedures used 1,000 resampling transformations. The benchmark is intended only as an illustration; computation times depend on the model, hardware, software versions, and number of resampling transformations.
+
+```{r}
+#| label: computational-benchmark
+#| cache: true
+
+sim_meta <- function(
+  k,
+  mu,
+  tau2,
+  n1,
+  n2 = NULL,
+  v = 1
+) {
+
+  if (is.null(n2)) {
+    n2 <- n1
+  }
+
+  deltai <- rnorm(
+    k,
+    0,
+    sqrt(tau2)
+  )
+
+  yi <- mu +
+    deltai +
+    rnorm(
+      k,
+      0,
+      sqrt(
+        v * (
+          1 / n1 +
+            1 / n2
+        )
+      )
+    )
+
+  vi <- (
+    rchisq(
+      k,
+      n1 + n2 - 2
+    ) /
+      (
+        n1 +
+          n2 -
+          2
+      )
+  ) *
+    v *
+    (
+      1 / n1 +
+        1 / n2
+    )
+
+  data.frame(
+    id = seq_len(k),
+    yi,
+    vi
+  )
+}
+
+elapsed <- function(expr) {
+
+  start <- Sys.time()
+
+  res <- eval(
+    substitute(expr),
+    envir = parent.frame()
+  )
+
+  time <- as.numeric(
+    difftime(
+      Sys.time(),
+      start,
+      units = "secs"
+    )
+  )
+
+  list(
+    result = res,
+    time = time
+  )
+}
+
+set.seed(2026)
+
+k_benchmark <- 100
+B_benchmark <- 1000
+
+x1 <- rnorm(k_benchmark)
+x2 <- rnorm(k_benchmark)
+x3 <- rnorm(k_benchmark)
+
+dat_benchmark <- sim_meta(
+  k = k_benchmark,
+  mu = 0.1 +
+    0.5 * x1 +
+    0.1 * x2 +
+    0.4 * x3,
+  tau2 = 0.1,
+  n1 = 50
+)
+
+dat_benchmark <- cbind(
+  dat_benchmark,
+  x1,
+  x2,
+  x3
+)
+
+fit_benchmark <- metafor::rma(
+  yi,
+  vi,
+  data = dat_benchmark,
+  mods = ~ x1 + x2 + x3
+)
+
+set.seed(2026)
+
+perm_rma <- elapsed(
+  metafor::permutest(
+    fit_benchmark,
+    exact = FALSE,
+    iter = B_benchmark,
+    progbar = FALSE
+  )
+)
+
+set.seed(2026)
+
+flip_rma <- elapsed(
+  flipmeta::flipmeta(
+    fit_benchmark,
+    B = B_benchmark,
+    progress = FALSE
+  )
+)
+
+benchmark_results <- tibble(
+  Procedure = c(
+    "metafor::permutest()",
+    "flipmeta"
+  ),
+  `Time (seconds)` = c(
+    perm_rma$time,
+    flip_rma$time
+  )
+)
+```
+
+```{r}
+#| label: tbl-computational-benchmark
+#| tbl-cap: "Illustrative computation times for 1,000 resampling transformations."
+
+benchmark_results |>
+  mutate(
+    `Time (seconds)` = sprintf(
+      "%.2f",
+      `Time (seconds)`
+    )
+  ) |>
+  knitr::kable(
+    align = c(
+      "l",
+      "c"
+    )
+  )
+```
+
+In this example, `metafor::permutest()` required approximately `r round(perm_rma$time, 1)` seconds, compared with `r round(flip_rma$time, 2)` seconds for `flipmeta`.
+
+# S3. Additional simulation results
+
+The main manuscript reports simulation results averaged over study sample size and moderator correlation. Here we show the corresponding results separately across these conditions.
+
+## S3.1 Type I error
+
+```{r}
+#| label: fig-type1-detailed
+#| fig-cap: "Empirical Type I error rates across study sample sizes and moderator correlations. The horizontal dotted line indicates the nominal significance level of .05. Wald is omitted for readability because it showed substantial Type I error inflation in several conditions. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
+#| fig-width: 11
+#| fig-height: 9
+
+type1_supp |>
+  filter(
+    inf != "Wald"
+  ) |>
+  mutate(
+    condition_label = paste0(
+      "τ² = ",
+      tau2,
+      ", ζ = ",
+      round(zeta, 2),
+      "\nρ = ",
+      rXZ
+    ),
+    n_label = paste0(
+      "n = ",
+      n
+    )
+  ) |>
+  ggplot(
+    aes(
+      x = k,
+      y = rejection_rate,
+      color = inf,
+      linetype = inf
+    )
+  ) +
+  geom_hline(
+    yintercept = 0.05,
+    linetype = "dotted",
+    linewidth = 0.5
+  ) +
+  geom_line(
+    linewidth = 0.7
+  ) +
+  geom_point(
+    size = 1.5
+  ) +
+  facet_grid(
+    condition_label ~ method + n_label,
+    switch = "y"
+  ) +
+  labs(
+    x = "Number of studies (k)",
+    y = "Type I error",
+    color = NULL,
+    linetype = NULL
+  ) +
+  theme_bw(
+    base_size = 10
+  ) +
+  theme(
+    legend.position = "bottom",
+    strip.placement = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,
+      hjust = 1
+    )
+  )
+```
+
+The disaggregated results show the conditions underlying the averages reported in the main manuscript and allow calibration to be inspected across study sample size and moderator correlation.
+
+## S3.2 Statistical power
+
+As in the main manuscript, power is shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition.
+
+```{r}
+#| label: fig-power-detailed
+#| fig-cap: "Empirical power across study sample sizes and moderator correlations. Results are shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
+#| fig-width: 11
+#| fig-height: 9
+
+power_supp |>
+  filter(
+    inf != "Wald"
+  ) |>
+  mutate(
+    condition_label = paste0(
+      "τ² = ",
+      tau2,
+      ", ζ = ",
+      round(zeta, 2),
+      "\nρ = ",
+      rXZ
+    ),
+    n_label = paste0(
+      "n = ",
+      n
+    )
+  ) |>
+  ggplot(
+    aes(
+      x = k,
+      y = power,
+      color = inf,
+      linetype = inf
+    )
+  ) +
+  geom_line(
+    linewidth = 0.7
+  ) +
+  geom_point(
+    size = 1.5
+  ) +
+  facet_grid(
+    condition_label ~ method + n_label,
+    switch = "y"
+  ) +
+  labs(
+    x = "Number of studies (k)",
+    y = "Power",
+    color = NULL,
+    linetype = NULL
+  ) +
+  theme_bw(
+    base_size = 10
+  ) +
+  theme(
+    legend.position = "bottom",
+    strip.placement = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,
+      hjust = 1
+    )
+  )
+```
+
+These results complement the aggregated power results reported in the main manuscript.
+
+
+# References
+
+::: {#refs}
+
+:::

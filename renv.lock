@@ -570,6 +570,56 @@
       "Maintainer": "Matthew Lincoln <matthew.d.lincoln@gmail.com>",
       "Repository": "CRAN"
     },
+    "clubSandwich": {
+      "Package": "clubSandwich",
+      "Version": "0.7.0",
+      "Source": "Repository",
+      "Priority": null,
+      "Depends": [
+        "R (>= 3.0.0)"
+      ],
+      "Imports": [
+        "stats",
+        "sandwich",
+        "lifecycle"
+      ],
+      "LinkingTo": [
+        null
+      ],
+      "Suggests": [
+        "Formula",
+        "knitr",
+        "testthat",
+        "rmarkdown",
+        "covr",
+        "AER",
+        "carData",
+        "estimatr",
+        "fixest",
+        "geepack",
+        "ivreg",
+        "Matrix",
+        "lme4",
+        "metafor",
+        "metadat",
+        "mlmRev",
+        "mmrm",
+        "nlme",
+        "plm (>= 1.6-4)",
+        "robumeta",
+        "zoo"
+      ],
+      "Enhances": [
+        null
+      ],
+      "License": "GPL-3",
+      "License_is_FOSS": null,
+      "License_restricts_use": null,
+      "OS_type": null,
+      "NeedsCompilation": "no",
+      "Repository": "CRAN",
+      "Type": "source"
+    },
     "codetools": {
       "Package": "codetools",
       "Version": "0.2-19",

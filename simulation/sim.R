@@ -45,7 +45,10 @@ if (!interactive()) {
   if (is.na(workers) || workers < 1L) {
     workers <- 1L
   }
-  future::plan(future::multicore, workers = workers)
+  future::plan(
+    future::multisession,
+    workers = workers
+  )
 } else {
   sim$nsim <- 3
 }

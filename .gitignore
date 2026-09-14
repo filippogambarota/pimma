@@ -52,3 +52,20 @@ rsconnect/
 res*.rds
 *_cache
 snowflake.log
+# Quarto/LaTeX temporary files
+*.ttt
+*.fff
+
+# macOS metadata
+.DS_Store
+
+# Quarto generated files
+paper/supplementary_files/
+
+paper/pimma_files/
+
+# Quarto output support files
+docs/paper/*_files/
+
+# Editor lock files
+.~lock.*#
