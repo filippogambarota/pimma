@@ -44,7 +44,9 @@ multi <- expand_grid(
     )
 ) |>
     mutate(
-        specification_id = row_number()
+        specification_id = row_number(),
+        rho_used = NA,
+        rho_effective = NA_real_
     )
 
 
@@ -148,6 +150,22 @@ for (i in seq_len(nrow(multi))) {
         specification_i
     )
 
+    # rho affects the aggregation only when at least one study contributes
+    # more than one usable effect size.
+    usable_i <- complete.cases(
+        dat_i[c("study_id", "yi", "vi")]
+    )
+    rho_used_i <- anyDuplicated(
+        dat_i$study_id[usable_i]
+    ) > 0L
+
+    multi$rho_used[i] <- rho_used_i
+    multi$rho_effective[i] <- if (rho_used_i) {
+        specification_i$rho
+    } else {
+        NA_real_
+    }
+
     # Number of studies before aggregation
     k_i <- dplyr::n_distinct(
         dat_i$study_id
@@ -195,20 +213,148 @@ for (i in seq_len(nrow(multi))) {
 # ------------------------------------------------------------
 
 eligible <- !vapply(
-    fitl,
-    is.null,
-    logical(1)
+  fitl,
+  is.null,
+  logical(1)
 )
 
 fitl <- fitl[eligible]
 fitlr <- fitlr[eligible]
 multi <- multi[eligible, ]
-multi <- multi[, colnames(multi) != "specification_id"]
 
-multi <- list(
-    multi = multi,
-    fitl = fitl,
-    fitlr = fitlr
+# ------------------------------------------------------------
+# 7. IDENTIFY DUPLICATE META-ANALYTIC MODELS
+# ------------------------------------------------------------
+
+model_inputs <- function(fit) {
+  list(
+    slab = fit$slab,
+    yi = fit$yi,
+    vi = fit$vi,
+    X = fit$X,
+    method = fit$method,
+    weighted = fit$weighted,
+    weights = fit$weights,
+    tau2_fixed = fit$tau2.fix,
+    tau2_value = if (isTRUE(fit$tau2.fix)) fit$tau2 else NULL,
+    test = fit$test,
+    level = fit$level
+  )
+}
+
+model_hash <- function(fit) {
+  digest::digest(
+    model_inputs(fit),
+    algo = "sha256",
+    serializeVersion = 3
+  )
+}
+
+# Preserve every eligible decision path and map it to the final analysis.
+specifications <- multi |>
+  mutate(
+    rho_requested = rho,
+    model_hash = vapply(
+      fitl,
+      model_hash,
+      character(1)
+    )
+  )
+
+# Verify that equal hashes correspond to exactly identical model inputs.
+input_signatures <- lapply(fitl, model_inputs)
+hash_groups <- split(
+  seq_along(fitl),
+  specifications$model_hash
+)
+hash_groups_identical <- vapply(
+  hash_groups,
+  function(index) {
+    reference <- input_signatures[[index[[1]]]]
+    all(vapply(
+      index,
+      function(j) identical(reference, input_signatures[[j]]),
+      logical(1)
+    ))
+  },
+  logical(1)
+)
+stopifnot(all(hash_groups_identical))
+
+display_choice <- function(x) {
+  if (dplyr::n_distinct(x) > 1L) {
+    "non_discriminating"
+  } else {
+    as.character(x[[1]])
+  }
+}
+
+collapse_paths <- function(x) {
+  paste(sort(unique(x)), collapse = " / ")
+}
+
+# "non_discriminating" means that multiple requested choices lead to the
+# same final model. The *_paths columns retain those original choices.
+model_labels <- specifications |>
+  group_by(model_hash) |>
+  summarise(
+    n_paths = n(),
+    control_display = display_choice(control),
+    control_paths = collapse_paths(control),
+    rob_display = display_choice(rob),
+    rob_paths = collapse_paths(rob),
+    format_display = display_choice(format),
+    format_paths = collapse_paths(format),
+    rating_display = display_choice(rating),
+    rating_paths = collapse_paths(rating),
+    rho_display = if (all(!rho_used)) {
+      "non_discriminating"
+    } else {
+      display_choice(rho_effective)
+    },
+    rho_paths = collapse_paths(rho_requested),
+    .groups = "drop"
+  )
+
+# Keep only the first occurrence of each identical model
+unique_model <- !duplicated(specifications$model_hash)
+
+fitl <- fitl[unique_model]
+fitlr <- fitlr[unique_model]
+analyses <- specifications[unique_model, ] |>
+  left_join(
+    model_labels,
+    by = "model_hash"
+  ) |>
+  mutate(
+    analysis_id = row_number(),
+    .before = 1
+  )
+
+specifications <- specifications |>
+  left_join(
+    analyses |>
+      select(analysis_id, model_hash),
+    by = "model_hash"
+  )
+
+stopifnot(
+  length(fitl) == length(fitlr),
+  length(fitl) == nrow(analyses),
+  !anyDuplicated(analyses$model_hash)
 )
 
-saveRDS(multi, "application/cbt-depression/results/cbt-dep-multi.rds")
+names(fitl) <- analyses$model_hash
+names(fitlr) <- analyses$model_hash
+
+multi <- list(
+  multi = analyses,
+  specifications = specifications,
+  fitl = fitl,
+  fitlr = fitlr
+)
+
+saveRDS(
+  multi,
+  "application/cbt-depression/results/cbt-dep-multi.rds"
+)

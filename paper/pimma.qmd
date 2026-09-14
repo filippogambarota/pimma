@@ -36,7 +36,7 @@ author:
     corresponding: true
     email: filippo.gambarota@unipd.it
 abstract: |
-  Meta-analyses, like primary studies, are affected by researcher degrees of freedom: researchers must decide which studies to include, how to compute effect sizes, and which statistical models to use. Different reasonable choices can lead to different results, making multiverse meta-analysis a useful tool for assessing robustness across alternative specifications. However, multiverse meta-analysis also introduces a multiple-testing problem. Current inferential approaches mainly provide a global test, which can establish that at least one specification differs from the null but cannot identify which individual specifications do so while accounting for multiplicity across the full multiverse. We introduce Post-selection Inference in Multiverse Meta-Analysis (PIMMA), which allows inference on individual specifications while controlling the Family-Wise Error Rate (FWER) and accounting for their dependence. In practical terms, PIMMA shows which results remain statistically significant after accounting for multiplicity across all reasonable analytical choices. In simulations, the specification-level test adequately controlled Type I error, with power comparable to robust variance estimation in scenarios where both methods maintained appropriate Type I error control. In an application to meta-analyses of Cognitive Behavioral Therapy efficacy for adult depression, 378 of 438 meta-analytic specifications remained significant after step-down max-T adjustment for multiple testing, accounting for dependence among specifications. PIMMA therefore extends multiverse meta-analysis from a global assessment of whether any effect is present to specification-level inference, allowing researchers to evaluate robustness across specifications and identify which individual results remain significant under appropriate error control.
+  Meta-analyses, like primary studies, are affected by researcher degrees of freedom: researchers must decide which studies to include, how to compute effect sizes, and which statistical models to use. Different reasonable choices can lead to different results, making multiverse meta-analysis a useful tool for assessing robustness across alternative specifications. However, multiverse meta-analysis also introduces a multiple-testing problem. Current inferential approaches mainly provide a global test, which can establish that at least one specification differs from the null but cannot identify which individual specifications do so while accounting for multiplicity across the full multiverse. We introduce Post-selection Inference in Multiverse Meta-Analysis (PIMMA), which allows inference on individual specifications while controlling the Family-Wise Error Rate (FWER) and accounting for their dependence. In practical terms, PIMMA shows which results remain statistically significant after accounting for multiplicity across all reasonable analytical choices. In simulations, the specification-level test adequately controlled Type I error, with power comparable to robust variance estimation in scenarios where both methods maintained appropriate Type I error control. In an application to meta-analyses of Cognitive Behavioral Therapy efficacy for adult depression, most meta-analytic specifications remained significant after step-down max-T adjustment for multiple testing, accounting for dependence among specifications. PIMMA therefore extends multiverse meta-analysis from a global assessment of whether any effect is present to specification-level inference, allowing researchers to evaluate robustness across specifications and identify which individual results remain significant under appropriate error control.
 keywords: [multiverse analysis, meta-analysis, post-selection inference, multiple testing, sign flipping, family-wise error rate]
 filters:
   - _filters/equation-ref.lua
@@ -115,6 +115,8 @@ multi <- readRDS(
     "cbt-dep-multi.rds"
   )
 )
+
+sensitivity_minimum_studies <- 10
 
 # CBT in adult populations ----------------------------------------------
 
@@ -1507,11 +1509,9 @@ round(R, 2)
 res$summary_table$p
 # step-down max-T p values
 p.adjust(res)$summary_table$p.adj
-# Holm p values
-stats::p.adjust(res$summary_table$p, method = "holm")
 ```
 
-@lst-ex-multi compares three specifications: a full-data RE--REML model, an RE--REML model restricted to journal articles, and a full-data EE model. Their signed standardized statistics are positively correlated, although the specifications differ in both included studies and fitted model. In this small example, both Holm and step-down max-$T$ reject all three hypotheses; the example therefore illustrates the dependence among tests and the conceptual difference between the corrections, not a gain in the number of discoveries. A Holm correction controls the FWER but does not exploit this dependence, potentially reducing power relative to max-$T$ in larger families. The application below illustrates the comparison in a substantially larger multiverse. As a simple illustration, @Li2005-ck proposed estimating the effective number of independent tests from the correlation structure. Under compound symmetry, for example, 100 tests with a common correlation of $\rho = 0.5$ correspond to approximately 51 effective tests according to their method. Adjusting for all 100 hypotheses without exploiting their dependence can therefore be unnecessarily conservative and lead to a corresponding loss of statistical power. PIMMA addresses the same general problem more directly by incorporating the joint dependence structure of the test statistics.
+@lst-ex-multi compares three specifications: a full-data RE--REML model, an RE--REML model restricted to journal articles, and a full-data EE model. Their signed standardized statistics are positively correlated, although the specifications differ in both included studies and fitted model. The example therefore illustrates the dependence among tests and how the joint sign-flipping distribution supports step-down max-$T$ adjustment. As a simple illustration of the broader role of dependence, @Li2005-ck proposed estimating the effective number of independent tests from the correlation structure. Under compound symmetry, for example, 100 tests with a common correlation of $\\rho = 0.5$ correspond to approximately 51 effective tests according to their method. Adjusting for all 100 hypotheses without exploiting their dependence can therefore be unnecessarily conservative. PIMMA addresses this problem directly by incorporating the joint dependence structure of the test statistics.
 
 # Application to psychotherapy for depression
 
@@ -1539,11 +1539,11 @@ After aggregation, each specification therefore contained one effect-size estima
 
 All specifications estimated an intercept-only random-effects model, with pooled Hedges' $g$ as the parameter of interest. Following @Del-Giudice2021-aq, we included analytical choices for which the alternative options could be considered approximately equally reasonable and defensible, rather than mechanically including every technically possible analysis. The resulting multiverse therefore necessarily reflects researcher judgment. This is appropriate here because the application is intended to illustrate PIMMA rather than provide a definitive assessment of the efficacy of CBT for depression.
 
-Within this set of defensible alternatives, the multiverse varied four decisions about which evidence was included in each meta-analysis and two decisions about within- and between-study variance (@tbl-application-grid). For each evidence-selection decision, the unrestricted option imposed no restriction on that characteristic and included all otherwise eligible categories. Crossing these decisions produced $3 \times 3 \times 4 \times 3 \times 3 \times 2 = 648$ candidate specifications. To avoid meta-analyses based on extremely sparse subsets, we required each specification to include at least six independent studies. After applying this criterion, 438 meta-analytic specifications remained.
+Within this set of defensible alternatives, the multiverse varied four decisions about which evidence was included in each meta-analysis and two decisions about within- and between-study variance (@tbl-application-grid). For each evidence-selection decision, the unrestricted option imposed no restriction on that characteristic and included all otherwise eligible categories. Crossing these decisions produced $3 \times 3 \times 4 \times 3 \times 3 \times 2 = 648$ candidate specifications. To avoid meta-analyses based on extremely sparse subsets, we required each specification to include at least six independent studies, leaving `r nrow(multi$specifications)` eligible decision paths. We then removed paths producing exactly the same final meta-analytic model, leaving `r nrow(multi$multi)` unique analyses. The mapping from the eligible decision paths to the unique analyses was retained. When multiple values of an analytical decision produced the same final model, that decision is shown as non-discriminating in the specification curve rather than being assigned the label of the first path encountered.
 
-To examine the role of multiplicity adjustment accounting for dependence among specifications, we also applied Holm's correction to the same unadjusted `flipmeta` $p$-values. Holm controls the FWER under arbitrary dependence but does not use the correlation among specification-level test statistics. We also considered RVE with Holm adjustment as a conventional inferential benchmark, because RVE showed similar specification-level Type I error control and power to `flipmeta` in the simulation study.
+As a conventional inferential benchmark, we compared PIMMA, combining specification-level `flipmeta` tests with step-down max-$T$ adjustment, with RVE followed by Holm correction. RVE showed similar specification-level Type I error control and power to `flipmeta` in the simulation study, while Holm controls the FWER without requiring an estimate of the dependence among tests. This comparison concerns two complete inferential pipelines and therefore reflects differences in both specification-level inference and multiplicity adjustment.
 
-PIMMA inference was based on $B = 50,000$ common sign-flipping transformations. The same number of transformations was used in the sensitivity analysis excluding specifications with fewer than 10 studies.
+PIMMA inference was based on $B = 50,000$ common sign-flipping transformations. The same number of transformations was used in the sensitivity analysis excluding specifications with fewer than `r sensitivity_minimum_studies` studies.
 
 | Specification decision | Levels |
 |------------------------------------|------------------------------------|
@@ -1579,21 +1579,6 @@ res <- flipmeta(
 )
 
 res <- p.adjust(res, method = "maxT")
-
-flipmeta_raw_p <- res$summary_table$p
-
-flipmeta_holm_p <- stats::p.adjust(
-  flipmeta_raw_p,
-  method = "holm"
-)
-
-flipmeta_holm_desc <- tibble(
-  p_holm = flipmeta_holm_p
-) |>
-  summarise(
-    n_holm_sig = sum(p_holm <= 0.05, na.rm = TRUE),
-    pct_holm_sig = 100 * mean(p_holm <= 0.05, na.rm = TRUE)
-  )
 
 # Global PIMMA test ------------------------------------------------------
 
@@ -1667,7 +1652,7 @@ k_per_spec <- vapply(
   numeric(1)
 )
 
-keep_k10 <- k_per_spec >= 10
+keep_k10 <- k_per_spec >= sensitivity_minimum_studies
 
 fitl_k10 <- multi$fitl[keep_k10]
 multi_k10 <- multi$multi[keep_k10, , drop = FALSE]
@@ -1739,18 +1724,11 @@ global_k10 <- combine_tests(
 
 global_p_k10 <- global_k10$summary_table$p[[1]]
 
-flipmeta_holm_k10 <- stats::p.adjust(
-  res_k10$summary_table$p,
-  method = "holm"
-)
-
 sensitivity_k10_desc <- res_k10$summary_table |>
   summarise(
     n_spec = n(),
     n_raw_sig = sum(p <= 0.05, na.rm = TRUE),
     pct_raw_sig = 100 * mean(p <= 0.05, na.rm = TRUE),
-    n_holm_sig = sum(flipmeta_holm_k10 <= 0.05, na.rm = TRUE),
-    pct_holm_sig = 100 * mean(flipmeta_holm_k10 <= 0.05, na.rm = TRUE),
     n_maxt_sig = sum(p.adj <= 0.05, na.rm = TRUE),
     pct_maxt_sig = 100 * mean(p.adj <= 0.05, na.rm = TRUE)
   )
@@ -1779,7 +1757,7 @@ rve_k10_desc <- tibble(
 
 ```{r}
 #| label: fig-volcano-plot
-#| fig-cap: 'Volcano plot of specification-level results in the CBT depression multiverse ($S = 438$). The plot shows the relationship between pooled effect size estimates (Hedges'' $g$) and adjusted $-\log_{10}(p)$ values from step-down max-$T$ correction. Points distinguish specifications that were not significant, significant only before multiplicity adjustment, or significant after step-down max-$T$ adjustment. The horizontal dotted line marks the $\alpha = 0.05$ threshold.'
+#| fig-cap: !expr paste0("Volcano plot of specification-level results in the CBT depression multiverse ($S = ", application_desc$n_spec, "$). The plot shows the relationship between pooled effect size estimates (Hedges' $g$) and adjusted $-\\log_{10}(p)$ values from step-down max-$T$ correction. Points distinguish specifications that were not significant, significant only before multiplicity adjustment, or significant after step-down max-$T$ adjustment. The horizontal dotted line marks the $\\alpha = 0.05$ threshold.")
 #| fig-width: 6
 
 vol <- res$summary_table |>
@@ -1932,38 +1910,35 @@ The `r application_desc$n_spec` included specifications differed substantially i
 
 The global PIMMA test rejected the global null hypothesis that the average effect was zero in all `r application_desc$n_spec` specifications ($p$ = `r sub("^0", "", sprintf("%.5f", global_p))`). This provides evidence that the average effect differs from zero in at least one specification, but it does not tell us which individual specifications remain statistically significant after correcting for multiple testing.
 
-At the specification level, `r inference_desc$n_raw_sig` of the `r application_desc$n_spec` specifications (`r round(inference_desc$pct_raw_sig, 1)`%) had an unadjusted `flipmeta` $p$-value $\leq .05$. After Holm correction, `r flipmeta_holm_desc$n_holm_sig` specifications (`r round(flipmeta_holm_desc$pct_holm_sig, 1)`%) remained significant. In contrast, after step-down max-$T$ adjustment accounting for dependence among specifications, `r inference_desc$n_maxt_sig` specifications (`r round(inference_desc$pct_maxt_sig, 1)`%) remained significant (@tbl-inference-comparison; @fig-volcano-plot). As a conventional benchmark, RVE with Holm adjustment yielded `r rve_holm_desc$n_holm_sig` specifications (`r round(rve_holm_desc$pct_holm_sig, 1)`%). Because Holm and step-down max-$T$ were applied to the same unadjusted `flipmeta` $p$-values, this comparison isolates the effect of accounting for the dependence among specifications in the multiplicity correction.
+At the specification level, `r inference_desc$n_raw_sig` of the `r application_desc$n_spec` specifications (`r round(inference_desc$pct_raw_sig, 1)`%) had an unadjusted `flipmeta` $p$-value $\leq .05$. After step-down max-$T$ adjustment accounting for dependence among specifications, `r inference_desc$n_maxt_sig` specifications (`r round(inference_desc$pct_maxt_sig, 1)`%) remained significant (@tbl-inference-comparison; @fig-volcano-plot). As a conventional benchmark, RVE with Holm adjustment yielded `r rve_holm_desc$n_holm_sig` specifications (`r round(rve_holm_desc$pct_holm_sig, 1)`%). This comparison evaluates the complete PIMMA and RVE--Holm pipelines; it does not isolate the contribution of the marginal test from that of the multiplicity adjustment.
 
 The proportion of significant specifications should be interpreted as a descriptive summary of this particular multiverse, not as an estimate of the probability that the effect is present.
 
 The dependence among specification-level signed standardized statistics varied considerably (@fig-correlation-structure). Pairwise correlations had a median of `r sprintf("%.2f", cor_desc$median_cor)` (Q1-Q3 = `r sprintf("%.2f", cor_desc$q1_cor)`--`r sprintf("%.2f", cor_desc$q3_cor)`), ranging from `r sprintf("%.2f", cor_desc$min_cor)` to `r sprintf("%.2f", cor_desc$max_cor)`. This is expected because some specifications retain substantially different sets of studies, whereas others share the same or very similar evidence and differ only in a small number of analytical choices. The step-down max-$T$ procedure uses this dependence structure, whereas Holm controls the FWER without explicitly using it.
 
-The sensitivity analysis excluding specifications with fewer than 10 independent studies included 318 specifications. The global null was again rejected ($p$ = `r sub("^0", "", sprintf("%.5f", global_p_k10))`), and all 318 specifications remained significant after step-down max-$T$ adjustment. Holm correction of the same `flipmeta` $p$-values retained `r sensitivity_k10_desc$n_holm_sig` specifications (`r round(sensitivity_k10_desc$pct_holm_sig, 1)`%), while RVE with Holm retained `r rve_k10_desc$n_holm_sig` (`r round(rve_k10_desc$pct_holm_sig, 1)`%) specifications.
+The sensitivity analysis excluding specifications with fewer than `r sensitivity_minimum_studies` independent studies included `r sensitivity_k10_desc$n_spec` specifications. The global null was again rejected ($p$ = `r sub("^0", "", sprintf("%.5f", global_p_k10))`), and `r sensitivity_k10_desc$n_maxt_sig` specifications remained significant after step-down max-$T$ adjustment. RVE with Holm adjustment retained `r rve_k10_desc$n_holm_sig` specifications (`r round(rve_k10_desc$pct_holm_sig, 1)`%).
 
 
 
 ```{r}
 #| label: tbl-inference-comparison
-#| tbl-cap: 'Specification-level inferential results across the CBT depression multiverse ($S = 438$), comparing unadjusted and multiplicity-adjusted inference using flipmeta and RVE.'
+#| tbl-cap: !expr paste0("Specification-level inferential results across the CBT depression multiverse ($S = ", application_desc$n_spec, "$), comparing unadjusted and multiplicity-adjusted inference using flipmeta and RVE.")
 
 inference_table <- tibble(
   Method = c(
     "flipmeta (unadjusted)",
-    "flipmeta + Holm",
     "flipmeta + step-down max-T",
     "RVE (unadjusted)",
     "RVE + Holm"
   ),
   `Significant specifications` = c(
     inference_desc$n_raw_sig,
-    flipmeta_holm_desc$n_holm_sig,
     inference_desc$n_maxt_sig,
     sum(rve_p <= 0.05, na.rm = TRUE),
     rve_holm_desc$n_holm_sig
   ),
   `Percentage (%)` = c(
     inference_desc$pct_raw_sig,
-    flipmeta_holm_desc$pct_holm_sig,
     inference_desc$pct_maxt_sig,
     100 * mean(rve_p <= 0.05, na.rm = TRUE),
     rve_holm_desc$pct_holm_sig
@@ -1985,7 +1960,7 @@ inference_table |>
 
 ```{r}
 #| label: fig-specification-curve
-#| fig-cap: "Multiverse of meta-analytic estimates (n = 438) and analytical specifications. Specifications are ordered by the pooled Hedges' $g$. The upper panel shows the estimated effect for each specification and whether it was not significant, significant only before adjustment, or significant after step-down max-$T$ adjustment. The dashed horizontal line indicates the median pooled Hedges' $g$ across specifications, while the dotted line indicates the null value of zero. The lower panel shows the analytical decisions defining each specification."
+#| fig-cap: !expr paste0("Multiverse of unique meta-analytic estimates ($n = ", application_desc$n_spec, "$) and analytical specifications. Analyses are ordered by the pooled Hedges' $g$. The upper panel shows the estimated effect for each analysis and whether it was not significant, significant only before adjustment, or significant after step-down max-$T$ adjustment. The dashed horizontal line indicates the median pooled Hedges' $g$ across analyses, while the dotted line indicates the null value of zero. The lower panel shows the analytical decisions defining each analysis; 'Non-discriminating' indicates that multiple levels of a decision produced the same final model after conditioning on the other decisions.")
 #| fig-width: 11
 #| fig-height: 9
 
@@ -2017,30 +1992,35 @@ spec_decisions <- spec_results |>
   transmute(
     specification,
     `Control condition` = recode(
-      control,
+      control_display,
       "waitlist" = "Waitlist",
       "cau" = "Care as usual",
-      "all" = "Unrestricted"
+      "all" = "Unrestricted",
+      "non_discriminating" = "Non-discriminating"
     ),
     `Risk of bias` = recode(
-      rob,
+      rob_display,
       "low_only" = "Low risk only",
       "low_some_concern" = "Low risk / some concerns",
-      "all" = "Unrestricted"
+      "all" = "Unrestricted",
+      "non_discriminating" = "Non-discriminating"
     ),
     `Treatment format` = recode(
-      format,
-      "all" = "Unrestricted"
+      format_display,
+      "all" = "Unrestricted",
+      "non_discriminating" = "Non-discriminating"
     ),
     `Outcome rater` = recode(
-      rating,
+      rating_display,
       "self-report" = "Self-reported",
       "clinician" = "Clinician-rated",
-      "all" = "Unrestricted"
+      "all" = "Unrestricted",
+      "non_discriminating" = "Non-discriminating"
     ),
-    `Within-study correlation` = paste0(
-      "\u03c1 = ",
-      rho
+    `Within-study correlation` = if_else(
+      rho_display == "non_discriminating",
+      "Non-discriminating",
+      paste0("\u03c1 = ", rho_display)
     ),
     `Heterogeneity estimator` = tau_estimator
   ) |>
@@ -2170,7 +2150,7 @@ Crucially, PIMMA allows researchers to inspect the multiverse and then focus on 
 
 The application illustrates that PIMMA answers two different questions: whether there is evidence of an effect somewhere in the multiverse, and which individual specifications remain statistically significant after correcting for multiple testing. The second question is often more informative, because rejecting the global null only shows that the effect differs from zero in at least one specification, without determining which individual specifications remain statistically significant after multiplicity adjustment.
 
-In the CBT example, all pooled estimates were positive, although their magnitude varied considerably across specifications. The global null was rejected, and most specifications remained significant after step-down max-$T$ correction. The application also shows why accounting for dependence is important. Specifications often share studies and analytical choices, so their test statistics are correlated. PIMMA uses this dependence when adjusting for multiple testing. When the same unadjusted `flipmeta` $p$-values were corrected using Holm and step-down max-$T$, 258 specifications remained significant after Holm correction, compared with 378 after step-down max-$T$. This shows that accounting for dependence can substantially reduce the conservativeness of multiplicity correction. In the sensitivity analysis excluding specifications with fewer than 10 studies, all 318 included specifications remained significant after step-down max-$T$ correction, suggesting that the main conclusion was not driven by the smallest meta-analytic subsets.
+In the CBT example, all pooled estimates were positive, although their magnitude varied considerably across specifications. The global null was rejected, and most specifications remained significant after step-down max-$T$ correction. The application also shows why accounting for dependence is important. Specifications often share studies and analytical choices, so their test statistics are correlated, and PIMMA incorporates this dependence in the multiplicity adjustment. Compared with the conventional RVE--Holm pipeline, which retained `r rve_holm_desc$n_holm_sig` significant specifications, PIMMA retained `r inference_desc$n_maxt_sig`. Because the two pipelines differ in both specification-level inference and multiplicity adjustment, this comparison should be interpreted as an overall benchmark rather than as an isolated assessment of the adjustment procedures. In the sensitivity analysis excluding specifications with fewer than `r sensitivity_minimum_studies` studies, `r sensitivity_k10_desc$n_maxt_sig` of the `r sensitivity_k10_desc$n_spec` included specifications remained significant after step-down max-$T$ correction, suggesting that the main conclusion was not driven by the smallest meta-analytic subsets.
 
 These findings should therefore be interpreted mainly as a demonstration of the PIMMA framework, rather than as a definitive reassessment of the clinical efficacy of CBT for depression.
 
