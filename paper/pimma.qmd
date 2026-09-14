@@ -2,7 +2,8 @@
 title: 'Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework'
 shorttitle: PIMMA
 format:
-  apaquarto-pdf: default
+  apaquarto-pdf:
+    keep-tex: true
 bibliography: references.bib
 author:
   - name: Matteo Manente
@@ -34,7 +35,7 @@ author:
     corresponding: true
     email: filippo.gambarota@unipd.it
 abstract: |
-  Meta-analyses, like primary studies, are affected by researcher degrees of freedom: researchers must decide which studies to include, how to compute effect sizes, and which statistical models to use. Different reasonable choices can lead to different results, making multiverse meta-analysis a useful tool for assessing robustness across alternative specifications. However, multiverse meta-analysis also introduces a multiple-testing problem. Current inferential approaches mainly provide a global test, which can establish that at least one specification differs from the null but cannot identify which individual specifications do so while accounting for multiplicity across the full multiverse. We introduce Post-selection Inference in Multiverse Meta-Analysis (PIMMA), which allows inference on individual specifications while controlling the Family-Wise Error Rate (FWER) and accounting for their dependence. In practical terms, PIMMA shows which results remain statistically significant after accounting for multiplicity across all reasonable analytical choices. In simulations, the specification-level test adequately controlled Type I error, with power comparable to robust variance estimation in scenarios where both methods maintained appropriate Type I error control. In an application to meta-analyses of Cognitive Behavioral Therapy efficacy for adult depression, most meta-analytic specifications remained significant after step-down max-T adjustment for multiple testing, accounting for dependence among specifications. PIMMA therefore extends multiverse meta-analysis from a global assessment of whether any effect is present to specification-level inference, allowing researchers to evaluate robustness across specifications and identify which individual results remain significant under appropriate error control.
+  Meta-analyses, like primary studies, are affected by researcher degrees of freedom: researchers must decide which studies to include, how to compute effect sizes, and which statistical models to use. Different reasonable choices can lead to different results, making multiverse meta-analysis a useful tool for assessing robustness across alternative specifications. However, multiverse meta-analysis also introduces a multiple-testing problem. Current inferential approaches mainly provide a global test, which can establish that at least one specification differs from the null but cannot identify which individual specifications do so while accounting for multiplicity across the full multiverse. We introduce Post-selection Inference in Multiverse Meta-Analysis (PIMMA), which allows inference on individual specifications while controlling the Family-Wise Error Rate (FWER) and accounting for their dependence. In practical terms, PIMMA shows which results remain statistically significant after accounting for multiplicity across all reasonable analytical choices. In simulations, the specification-level test adequately controlled Type I error, with power comparable to robust variance estimation in scenarios where both methods maintained appropriate Type I error control. In an application to meta-analyses of Cognitive Behavioral Therapy efficacy for adult depression, 297 of 336 unique meta-analytic analyses remained significant after step-down max-T adjustment for multiple testing, accounting for dependence among analyses. PIMMA therefore extends multiverse meta-analysis from a global assessment of whether any effect is present to specification-level inference, allowing researchers to evaluate robustness across specifications and identify which individual results remain significant under appropriate error control.
 keywords: [multiverse analysis, meta-analysis, post-selection inference, multiple testing, sign flipping, family-wise error rate]
 filters:
   - _filters/equation-ref.lua
@@ -450,6 +451,8 @@ type1_desc <- list(
   flip_min = min(type1_display$p[type1_display$inf == "flipmeta"]),
   flip_max = max(type1_display$p[type1_display$inf == "flipmeta"]),
   rve_min = min(type1_display$p[type1_display$inf == "RVE"]),
+  wald_median = median(type1_display$p[type1_display$inf == "Wald"], na.rm = TRUE),
+  wald_max = max(type1_display$p[type1_display$inf == "Wald"], na.rm = TRUE),
   kh_zeta_0 = kh_by_zeta$p[1],
   kh_zeta_1 = kh_by_zeta$p[2],
   kh_zeta_2 = kh_by_zeta$p[3],
@@ -998,7 +1001,7 @@ flip_rma <- elapsed(
 )
 ```
 
-We explored this computational difference in the supplementary materials. For a meta-analysis with $k = 100$ studies and 3 predictors, using `r benchmark_B` resampling transformations for each procedure, `metafor::permutest()` takes roughly `r round(perm_rma$time)` seconds, compared with `r round(flip_rma$time, 1)` seconds for the score sign-flipping approach. The score sign-flipping test is implemented in the `flipmeta` R package (<https://github.com/filippogambarota/flipmeta>). Hereafter, we refer to this extension of the flipscores framework to meta-analysis as `flipmeta`.
+We explored this computational difference in the supplementary materials ([github.com/filippogambarota/pimma](https://github.com/filippogambarota/pimma)). For a meta-analysis with $k = 100$ studies and 3 predictors, using `r benchmark_B` resampling transformations for each procedure, `metafor::permutest()` takes roughly `r round(perm_rma$time)` seconds, compared with `r round(flip_rma$time, 1)` seconds for the score sign-flipping approach. The score sign-flipping test is implemented in the `flipmeta` R package (<https://github.com/filippogambarota/flipmeta>). Hereafter, we refer to this extension of the flipscores framework to meta-analysis as `flipmeta`.
 
 # From `flipmeta` to PIMMA
 
@@ -1192,7 +1195,7 @@ sim_plt |>
 
 ```{r}
 #| label: fig-type1-sim
-#| fig-cap: 'Empirical Type I error rates across inferential methods in the simulation study ($\alpha = 0.05$). Rejection rates for testing the focal moderator coefficient ($\beta_X = 0$) are averaged over sample size per group ($n$) and moderator correlation ($\rho_{XZ}$), shown as a function of the number of studies ($k$), baseline heterogeneity ($\tau_0^2$), scale heterogeneity parameter ($\zeta$), and fitted model type (Equal-Effects [EE] vs. Random-Effects REML [RE--REML]). Dotted horizontal lines indicate the 95% Monte Carlo confidence interval around nominal $\alpha = 0.05$. The Wald test is omitted because it showed inflated Type I error rates across many simulated conditions (median = 0.11, max = 0.30).'
+#| fig-cap: !expr paste0("Empirical Type I error rates across inferential methods in the simulation study ($\\alpha = 0.05$). Rejection rates for testing the focal moderator coefficient ($\\beta_X = 0$) are averaged over sample size per group ($n$) and moderator correlation ($\\rho_{XZ}$), shown as a function of the number of studies ($k$), baseline heterogeneity ($\\tau_0^2$), scale heterogeneity parameter ($\\zeta$), and fitted model type (Equal-Effects [EE] vs. Random-Effects REML [RE--REML]). Dotted horizontal lines indicate the 95% Monte Carlo confidence interval around nominal $\\alpha = 0.05$. The Wald test is omitted because it showed inflated Type I error rates across many simulated conditions (median = ", sprintf("%.2f", type1_desc$wald_median), ", max = ", sprintf("%.2f", type1_desc$wald_max), ").")
 #| fig-height: 12
 #| fig-width: 10
 
@@ -1976,7 +1979,7 @@ More broadly, PIMMA extends multiverse meta-analysis beyond descriptive robustne
 
 # Reproducibility and data availability
 
-All code required to reproduce the simulations, empirical application, figures, and tables is available in the accompanying repository. The CBT dataset derives from @Plessen2023-ex; access and redistribution follow the conditions of the original data source. Software and package versions used for the analyses are reported in the supplementary materials.
+All code required to reproduce the simulations, empirical application, figures, and tables is available in the accompanying repository. The CBT dataset derives from @Plessen2023-ex; access and redistribution follow the conditions of the original data source. Software and package versions used for the analyses are reported in the supplementary materials on the online Github repository [github.com/filippogambarota/pimma](https://github.com/filippogambarota/pimma).
 
 # AI usage
 
