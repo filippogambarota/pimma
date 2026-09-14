@@ -7,6 +7,8 @@ library(purrr)
 library(ggplot2)
 library(flipmeta)
 
+set.seed(2026)
+
 dat <- readRDS("application/cbt-depression/results/cbt-dep-clean.rds")
 
 therapies <- c(
@@ -344,10 +346,27 @@ stopifnot(
   !anyDuplicated(analyses$model_hash)
 )
 
-names(fitl) <- analyses$model_hash
-names(fitlr) <- analyses$model_hash
+# ------------------------------------------------------------
+# 8. MULTIVERSE ANALYSIS
+# ------------------------------------------------------------
+
+names(fitl) <- paste0(
+  "mod",
+  seq_along(multi$fitl)
+)
+
+res <- flipmeta(
+  fitl,
+  id = "study_id",
+  B = 5000,
+  extra = multi$multi,
+  progress = FALSE
+)
+
+res <- p.adjust(res, method = "maxT")
 
 multi <- list(
+  res = res,
   multi = analyses,
   specifications = specifications,
   fitl = fitl,

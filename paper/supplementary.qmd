@@ -1,47 +1,11 @@
 ---
-title: "Supplementary Materials"
-
-format:
-  apaquarto-pdf:
-    toc: true
-    toc-depth: 2
-
-author:
-  - name: Matteo Manente
-    affiliations:
-      - name: University of Padova
-        id: 1
-        department: Department of Developmental Psychology and Socialization
-        address: Via Venezia 8
-        city: Padova
-        state: Italy
-        postal-code: 35131
-
-  - name: Livio Finos
-    affiliations:
-      - name: University of Padova
-        id: 2
-        department: Department of Statistical Sciences
-        address: Via Battisti 241
-        city: Padova
-        state: Italy
-        postal-code: 35121
-
-  - name: Gianmarco Altoè
-    affiliations:
-      - ref: 1
-
-  - name: Filippo Gambarota
-    affiliations:
-      - ref: 1
-    corresponding: true
-    email: filippo.gambarota@unipd.it
-
-bibliography:
-  - "pimma.bib"
-  - "references.bib"
-
-floatsintext: true
+title: "Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework"
+subtitle: "Supplementary Materials"
+format: 
+  html:
+    page-layout: full
+    grid:
+      body-width: 1400px
 ---
 
 ```{r}
@@ -55,13 +19,17 @@ library(metafor)
 library(here)
 library(ggh4x)
 library(flipmeta)
+library(patchwork)
+library(reactable)
+library(scales)
+library(htmltools)
 
 knitr::opts_chunk$set(
   warning = FALSE,
   echo = FALSE,
   message = FALSE,
   fig.align = "center",
-  dev = "cairo_pdf"
+  dev = "svg"
 )
 
 mtheme <- function() {
@@ -73,64 +41,13 @@ mtheme <- function() {
 
 theme_set(mtheme())
 
-# -----------------------------------------------------------------------
-# Reproducibility information
-# -----------------------------------------------------------------------
-
-operating_system <- paste(
-  Sys.info()[["sysname"]],
-  Sys.info()[["release"]],
-  Sys.info()[["machine"]]
+inf_lbl <- c(
+  "pval_adhoc" = "mKH",
+  "pval_knha"  = "KH",
+  "pval_rob"   = "RVE",
+  "pval_flip"  = "flipmeta",
+  "pval_wald"  = "Wald"
 )
-
-git_commit <- tryCatch(
-  system2(
-    "git",
-    c("rev-parse", "HEAD"),
-    stdout = TRUE
-  ),
-  error = function(e) NA_character_
-)
-
-quarto_version <- tryCatch(
-  system2(
-    "quarto",
-    "--version",
-    stdout = TRUE
-  ),
-  error = function(e) NA_character_
-)
-
-software_versions <- tibble(
-  Software = c(
-    "R",
-    "Quarto",
-    "metafor",
-    "flipmeta",
-    "flipscores",
-    "dplyr",
-    "tidyr",
-    "ggplot2"
-  ),
-  Version = c(
-    paste0(
-      R.version$major,
-      ".",
-      R.version$minor
-    ),
-    quarto_version,
-    as.character(packageVersion("metafor")),
-    as.character(packageVersion("flipmeta")),
-    as.character(packageVersion("flipscores")),
-    as.character(packageVersion("dplyr")),
-    as.character(packageVersion("tidyr")),
-    as.character(packageVersion("ggplot2"))
-  )
-)
-
-# -----------------------------------------------------------------------
-# Simulation results
-# -----------------------------------------------------------------------
 
 sim <- readRDS(
   here::here(
@@ -158,126 +75,6 @@ remove_redundant <- function(data, cols = NULL) {
   data[, keep, drop = FALSE]
 }
 
-sim_long <- sim |>
-  remove_redundant() |>
-  pivot_longer(
-    starts_with("pval"),
-    names_to = "inf",
-    values_to = "pval"
-  )
-
-inf_lbl <- c(
-  "pval_adhoc" = "mKH",
-  "pval_knha" = "KH",
-  "pval_rob" = "RVE",
-  "pval_flip" = "flipmeta",
-  "pval_wald" = "Wald"
-)
-
-# Type I error by individual simulation condition
-
-type1_supp <- sim_long |>
-  filter(
-    bX == 0
-  ) |>
-  group_by(
-    rXZ,
-    tau2,
-    zeta,
-    k,
-    n,
-    method,
-    inf
-  ) |>
-  summarise(
-    rejection_rate = mean(
-      pval <= 0.05,
-      na.rm = TRUE
-    ),
-    nsim = n(),
-    .groups = "drop"
-  ) |>
-  mutate(
-    method = ifelse(
-      method == "EE",
-      "EE",
-      "RE--REML"
-    ),
-    inf = inf_lbl[inf]
-  )
-
-# Identify method-condition combinations with adequate Type I error control
-
-type1_ok <- type1_supp |>
-  mutate(
-    type1_upper = 0.05 +
-      qnorm(0.975) *
-      sqrt(
-        0.05 * 0.95 / nsim
-      ),
-    type1_ok = rejection_rate <= type1_upper
-  ) |>
-  select(
-    rXZ,
-    tau2,
-    zeta,
-    k,
-    n,
-    method,
-    inf,
-    type1_ok
-  )
-
-# Power by individual simulation condition
-
-power_supp <- sim_long |>
-  filter(
-    bX != 0
-  ) |>
-  group_by(
-    rXZ,
-    tau2,
-    zeta,
-    k,
-    n,
-    method,
-    inf
-  ) |>
-  summarise(
-    power = mean(
-      pval <= 0.05,
-      na.rm = TRUE
-    ),
-    .groups = "drop"
-  ) |>
-  mutate(
-    method = ifelse(
-      method == "EE",
-      "EE",
-      "RE--REML"
-    ),
-    inf = inf_lbl[inf]
-  ) |>
-  left_join(
-    type1_ok,
-    by = c(
-      "rXZ",
-      "tau2",
-      "zeta",
-      "k",
-      "n",
-      "method",
-      "inf"
-    )
-  ) |>
-  filter(
-    type1_ok
-  )
-
-# -----------------------------------------------------------------------
-# CBT multiverse
-# -----------------------------------------------------------------------
-
 multi <- readRDS(
   here::here(
     "application",
@@ -286,6 +83,95 @@ multi <- readRDS(
     "cbt-dep-multi.rds"
   )
 )
+
+res <- multi$res
+
+make_table <- function(data, id, palette, threshold = NULL, domain = c(0, 1)) {
+  
+  tab <- data |>
+    remove_redundant() |>
+    pivot_wider(
+      names_from = name,
+      values_from = p
+    ) |>
+    mutate(
+      across(where(is.numeric), \(x) round(x, 3))
+    )
+  
+  result_cols <- intersect(
+    unname(inf_lbl),
+    names(tab)
+  )
+  
+  dropdown_cols <- setdiff(names(tab), result_cols)
+  
+  pal <- col_numeric(
+    palette = palette,
+    domain = domain
+  )
+  
+  cell_color <- function(value) {
+    if (!is.null(threshold) && value <= threshold) {
+      "white"
+    } else {
+      pal(pmin(value, max(domain)))
+    }
+  }
+  
+  columns <- setNames(
+    lapply(
+      names(tab),
+      \(x) {
+        
+        is_num <- is.numeric(tab[[x]])
+        is_int <- is_num &&
+          all(is.na(tab[[x]]) | tab[[x]] %% 1 == 0)
+        
+        colDef(
+          format = if (is_num) {
+            colFormat(
+              digits = if (x %in% result_cols) 3 else if (is_int) 0 else 3
+            )
+          },
+          
+          style = if (x %in% result_cols) {
+            function(value) {
+              list(background = cell_color(value))
+            }
+          },
+          
+          filterInput = if (x %in% dropdown_cols) {
+            function(values, name) {
+              tags$select(
+                onchange = sprintf(
+                  "Reactable.setFilter('%s', '%s', this.value)",
+                  id,
+                  name
+                ),
+                tags$option("All", value = ""),
+                lapply(
+                  sort(unique(values)),
+                  \(v) tags$option(v, value = v)
+                )
+              )
+            }
+          }
+        )
+      }
+    ),
+    names(tab)
+  )
+  
+  reactable(
+    tab,
+    filterable = TRUE,
+    searchable = TRUE,
+    sortable = TRUE,
+    pagination = FALSE,
+    columns = columns,
+    elementId = id
+  )
+}
 ```
 
 # S1. Reproducibility and software
@@ -294,26 +180,11 @@ All analyses were conducted in R. Meta-analytic models were fitted using `metafo
 
 The source code used to generate the simulations, empirical application, figures, and tables is available in the accompanying repository. The manuscript and supplementary materials were generated directly from Quarto source files.
 
-```{r}
-#| label: tbl-software
-#| tbl-cap: "Main software versions used to reproduce the analyses."
-
-software_versions |>
-  knitr::kable(
-    align = c(
-      "l",
-      "l"
-    )
-  )
-```
-
-The supplementary materials were rendered on `r operating_system` from Git commit `r git_commit`.
-
 # S2. Computational comparison with permutation testing
 
 The main manuscript notes that score sign flipping avoids repeated refitting of the complete meta-regression model. We illustrate the practical computational difference using a mixed-effects meta-regression with 100 independent studies and three predictors.
 
-Both procedures used 1,000 resampling transformations. The benchmark is intended only as an illustration; computation times depend on the model, hardware, software versions, and number of resampling transformations.
+Both procedures used 1,000 resampling transformations. The benchmark is intended only as an illustration; computation times depend on the model, hardware, software versions, and number of resampling transformations. The timing results are summarized in @tbl-computational-benchmark.
 
 ```{r}
 #| label: computational-benchmark
@@ -483,152 +354,119 @@ benchmark_results |>
   )
 ```
 
-In this example, `metafor::permutest()` required approximately `r round(perm_rma$time, 1)` seconds, compared with `r round(flip_rma$time, 2)` seconds for `flipmeta`.
+In this example, `metafor::permutest()` required approximately `r round(perm_rma$time, 1)` seconds, compared with `r round(flip_rma$time, 2)` seconds for `flipmeta` (see @tbl-computational-benchmark).
 
 # S3. Additional simulation results
 
-The main manuscript reports simulation results averaged over study sample size and moderator correlation. Here we show the corresponding results separately across these conditions.
+This section presents full condition-level empirical results from the simulation study evaluating specification-level inference. The interactive tables allow filtering across simulation conditions, including the number of studies ($k$), study sample size ($n$), baseline heterogeneity ($\tau^2$), unobserved confounder correlation ($\zeta$), moderator correlation ($r_{XZ}$), and regression coefficients ($\beta_0, \beta_X, \beta_Z$).
 
-## S3.1 Type I error
+Five inferential procedures are evaluated:
+- **mKH**: Modified Knapp--Hartung adjustment
+- **KH**: Knapp--Hartung adjustment
+- **RVE**: Robust Variance Estimation with CR2 adjustment and Satterthwaite degrees of freedom
+- **flipmeta**: Score-based sign-flipping inference
+- **Wald**: Standard Wald $z$-test
 
 ```{r}
-#| label: fig-type1-detailed
-#| fig-cap: "Empirical Type I error rates across study sample sizes and moderator correlations. The horizontal dotted line indicates the nominal significance level of .05. Wald is omitted for readability because it showed substantial Type I error inflation in several conditions. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
+#| echo: false
+#| warning: false
+#| message: false
+
+sim_res <- sim |> 
+  pivot_longer(starts_with("pval")) |> 
+  group_by(nX, nZ, b0, bX, bZ, rXZ, tau2, zeta, k, n, method, name) |> 
+  summarise(
+    p = mean(value <= 0.05),
+    .groups = "drop"
+  ) |>
+  mutate(
+    cond = if_else(bX == 0, "type1", "power"),
+    name = inf_lbl[name]
+  )
+
+power <- filter(sim_res, cond == "power")
+type1 <- filter(sim_res, cond == "type1")
+```
+
+## Power
+
+Empirical power under $\beta_X = 0.2$ across simulated conditions. Green shading highlights higher power values (scale from 0 to 1).
+
+```{r}
+#| echo: false
+
+make_table(
+  power,
+  id = "power-table",
+  palette = c("white", "#63BE7B"),
+  domain = c(0, 1)
+)
+```
+
+## Type I error
+
+Empirical Type I error rates under $\beta_X = 0$ across simulated conditions at nominal $\alpha = 0.05$. Red shading highlights inflated Type I error rates exceeding 0.05.
+
+```{r}
+#| echo: false
+
+make_table(
+  type1,
+  id = "type1-table",
+  palette = c("white", "#F8696B"),
+  threshold = 0.05,
+  domain = c(0.05, 0.3)
+)
+```
+
+# S4. CBT depression specification curve
+
+The specification curve (@fig-specification-curve) displays the complete set of unique analyses, ordered by their pooled effect estimate. “Non-discriminating” indicates that multiple nominal levels of a decision produced the same final analysis after conditioning on the other decisions.
+
+```{r}
+#| label: fig-specification-curve
+#| fig-cap: !expr paste0("Specification curve for the CBT depression multiverse ($S = ", nrow(multi$multi), "$ unique analyses). The upper panel shows pooled Hedges' $g$ estimates, classified by unadjusted and step-down max-$T$ significance. The lower panel shows the analytical decisions defining each analysis; 'Non-discriminating' indicates that multiple levels produced the same final model.")
 #| fig-width: 11
 #| fig-height: 9
 
-type1_supp |>
-  filter(
-    inf != "Wald"
-  ) |>
+spec_results <- res$summary_table |>
   mutate(
-    condition_label = paste0(
-      "τ² = ",
-      tau2,
-      ", ζ = ",
-      round(zeta, 2),
-      "\nρ = ",
-      rXZ
+    inference = case_when(
+      p.adj <= 0.05 ~ "Significant after adj",
+      p <= 0.05 ~ "Significant before adj",
+      TRUE ~ "Not significant"
     ),
-    n_label = paste0(
-      "n = ",
-      n
-    )
+    inference = factor(inference, levels = c("Not significant", "Significant before adj", "Significant after adj"))
   ) |>
-  ggplot(
-    aes(
-      x = k,
-      y = rejection_rate,
-      color = inf,
-      linetype = inf
-    )
-  ) +
-  geom_hline(
-    yintercept = 0.05,
-    linetype = "dotted",
-    linewidth = 0.5
-  ) +
-  geom_line(
-    linewidth = 0.7
-  ) +
-  geom_point(
-    size = 1.5
-  ) +
-  facet_grid(
-    condition_label ~ method + n_label,
-    switch = "y"
-  ) +
-  labs(
-    x = "Number of studies (k)",
-    y = "Type I error",
-    color = NULL,
-    linetype = NULL
-  ) +
-  theme_bw(
-    base_size = 10
-  ) +
-  theme(
-    legend.position = "bottom",
-    strip.placement = "outside",
-    strip.text.y.left = element_text(
-      angle = 0,
-      hjust = 1
-    )
-  )
+  arrange(estimate) |>
+  mutate(specification = row_number())
+
+spec_decisions <- spec_results |>
+  transmute(
+    specification,
+    `Control condition` = recode(control_display, waitlist = "Waitlist", cau = "Care as usual", all = "Unrestricted", non_discriminating = "Non-discriminating"),
+    `Risk of bias` = recode(rob_display, low_only = "Low risk only", low_some_concern = "Low risk / some concerns", all = "Unrestricted", non_discriminating = "Non-discriminating"),
+    `Treatment format` = recode(format_display, all = "Unrestricted", non_discriminating = "Non-discriminating"),
+    `Outcome rater` = recode(rating_display, `self-report` = "Self-reported", clinician = "Clinician-rated", all = "Unrestricted", non_discriminating = "Non-discriminating"),
+    `Within-study correlation` = if_else(rho_display == "non_discriminating", "Non-discriminating", paste0("ρ = ", rho_display)),
+    `Heterogeneity estimator` = tau_estimator
+  ) |>
+  pivot_longer(-specification, names_to = "decision", values_to = "level") |>
+  mutate(decision = factor(decision, levels = c("Control condition", "Risk of bias", "Treatment format", "Outcome rater", "Within-study correlation", "Heterogeneity estimator")))
+
+p_estimate <- ggplot(spec_results, aes(specification, estimate, color = inference)) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_hline(yintercept = median(spec_results$estimate), linetype = "dashed", alpha = 0.6) +
+  geom_point(size = 2.5) +
+  scale_color_manual(values = c("Not significant" = "grey60", "Significant before adj" = "firebrick", "Significant after adj" = "forestgreen")) +
+  labs(x = NULL, y = "Pooled Hedges' g", color = NULL) +
+  theme_bw(base_size = 14) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), legend.position = "top")
+
+p_decisions <- ggplot(spec_decisions, aes(specification, level)) +
+  geom_point(size = 0.8, alpha = 0.7) +
+  facet_grid(decision ~ ., scales = "free_y", space = "free_y", switch = "y") +
+  labs(x = "Specifications ordered by pooled effect", y = NULL) +
+  theme_bw(base_size = 11) + theme(strip.placement = "outside", strip.background = element_blank(), strip.text.y.left = element_text(angle = 0, face = "bold"), axis.text.y = element_text(size = 8))
+
+p_estimate / p_decisions + plot_layout(heights = c(2.2, 3))
 ```
-
-The disaggregated results show the conditions underlying the averages reported in the main manuscript and allow calibration to be inspected across study sample size and moderator correlation.
-
-## S3.2 Statistical power
-
-As in the main manuscript, power is shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition.
-
-```{r}
-#| label: fig-power-detailed
-#| fig-cap: "Empirical power across study sample sizes and moderator correlations. Results are shown only for method-condition combinations that adequately controlled Type I error under the corresponding null condition. Baseline heterogeneity, scale heterogeneity, and moderator correlation are denoted by τ², ζ, and ρ, respectively."
-#| fig-width: 11
-#| fig-height: 9
-
-power_supp |>
-  filter(
-    inf != "Wald"
-  ) |>
-  mutate(
-    condition_label = paste0(
-      "τ² = ",
-      tau2,
-      ", ζ = ",
-      round(zeta, 2),
-      "\nρ = ",
-      rXZ
-    ),
-    n_label = paste0(
-      "n = ",
-      n
-    )
-  ) |>
-  ggplot(
-    aes(
-      x = k,
-      y = power,
-      color = inf,
-      linetype = inf
-    )
-  ) +
-  geom_line(
-    linewidth = 0.7
-  ) +
-  geom_point(
-    size = 1.5
-  ) +
-  facet_grid(
-    condition_label ~ method + n_label,
-    switch = "y"
-  ) +
-  labs(
-    x = "Number of studies (k)",
-    y = "Power",
-    color = NULL,
-    linetype = NULL
-  ) +
-  theme_bw(
-    base_size = 10
-  ) +
-  theme(
-    legend.position = "bottom",
-    strip.placement = "outside",
-    strip.text.y.left = element_text(
-      angle = 0,
-      hjust = 1
-    )
-  )
-```
-
-These results complement the aggregated power results reported in the main manuscript.
-
-
-# References
-
-::: {#refs}
-
-:::

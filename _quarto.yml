@@ -1,4 +1,35 @@
 project:
-  title: "PIMMA"
+  type: website
   output-dir: docs
-  
+
+website:
+  title: "PIMMA"
+  navbar:
+    left:
+      - href: index.qmd
+        text: home
+      - href: paper/pimma.qmd
+        text: paper
+      - href: paper/supplementary.qmd
+        text: supplementary
+execute:
+  freeze: auto
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+
+author:
+  - name: Matteo Manente
+    email: matteo.manente.3@studenti.unipd.it
+    orcid: 0009-0009-3246-3476
+  - name: Livio Finos
+    email: livio.finos@unipd.it
+    orcid: 0000-0003-3181-8078
+  - name: Gianmarco Altoè
+    email: gianmarco.altoe@unipd.it
+    orcid: 0000-0003-1154-9528
+  - name: Filippo Gambarota
+    email: filippo.gambarota@unipd.it
+    orcid: 0000-0002-6666-1747

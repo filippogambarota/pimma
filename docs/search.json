@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "paper/supplementary.html",
+    "href": "paper/supplementary.html",
+    "title": "Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework",
+    "section": "",
+    "text": "All analyses were conducted in R. Meta-analytic models were fitted using metafor, and score-based sign-flipping inference was performed using flipmeta. Random-number seeds were fixed for all simulation and resampling procedures.\nThe source code used to generate the simulations, empirical application, figures, and tables is available in the accompanying repository. The manuscript and supplementary materials were generated directly from Quarto source files."
+  },
+  {
+    "objectID": "paper/supplementary.html#power",
+    "href": "paper/supplementary.html#power",
+    "title": "Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework",
+    "section": "Power",
+    "text": "Power\nEmpirical power under \\(\\beta_X = 0.2\\) across simulated conditions. Green shading highlights higher power values (scale from 0 to 1)."
+  },
+  {
+    "objectID": "paper/supplementary.html#type-i-error",
+    "href": "paper/supplementary.html#type-i-error",
+    "title": "Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework",
+    "section": "Type I error",
+    "text": "Type I error\nEmpirical Type I error rates under \\(\\beta_X = 0\\) across simulated conditions at nominal \\(\\alpha = 0.05\\). Red shading highlights inflated Type I error rates exceeding 0.05."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "PIMMA",
+    "section": "",
+    "text": "Reproducibility materials for the manuscript:\nPost-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework"
+  },
+  {
+    "objectID": "index.html#repository-structure",
+    "href": "index.html#repository-structure",
+    "title": "PIMMA",
+    "section": "Repository structure",
+    "text": "Repository structure\nThe main reproducibility materials are organized as follows:\napplication/cbt-depression/\n├── 01_preprocessing.R\n├── 02-multiverse.R\n├── data/\n│   └── data-depression-psyctr-2022.xlsx\n└── results/\n    ├── cbt-dep-clean.rds\n    └── cbt-dep-multi.rds\n\nsimulation/\n├── sim.R\n├── utils.R\n└── res-clean.rds\n\npaper/\n├── pimma.qmd\n├── supplementary.qmd\n└── references.bib\n\npimma.slurm\nrenv.lock"
+  },
+  {
+    "objectID": "index.html#software-environment",
+    "href": "index.html#software-environment",
+    "title": "PIMMA",
+    "section": "Software environment",
+    "text": "Software environment\nPackage versions used for the analyses are recorded in renv.lock.\nFrom the repository root, restore the R environment with:\ninstall.packages(\"renv\")\nrenv::restore()"
+  },
+  {
+    "objectID": "index.html#empirical-application",
+    "href": "index.html#empirical-application",
+    "title": "PIMMA",
+    "section": "Empirical application",
+    "text": "Empirical application\nThe raw dataset is stored at:\napplication/cbt-depression/data/data-depression-psyctr-2022.xlsx\nFrom the repository root, reproduce the empirical application by running:\nsource(\"application/cbt-depression/01_preprocessing.R\")\nsource(\"application/cbt-depression/02-multiverse.R\")\nThese scripts generate the processed dataset and multiverse-analysis results in:\napplication/cbt-depression/results/"
+  },
+  {
+    "objectID": "index.html#simulation-study",
+    "href": "index.html#simulation-study",
+    "title": "PIMMA",
+    "section": "Simulation study",
+    "text": "Simulation study\nPrecomputed simulation results used in the manuscript are included in:\nsimulation/res-clean.rds\nThe complete simulation can be reproduced from the repository root with:\nRscript simulation/sim.R\nThe full simulation uses 5,000 replications per condition, is computationally intensive, and was executed on an HPC cluster using the SLURM submission script (pimma.slurm).\nWhen simulation/sim.R is sourced interactively in R or RStudio, it uses a reduced number of replications for testing purposes. Use Rscript simulation/sim.R (or submit pimma.slurm on a cluster) to reproduce the full simulation."
+  },
+  {
+    "objectID": "index.html#manuscript-and-supplementary-materials",
+    "href": "index.html#manuscript-and-supplementary-materials",
+    "title": "PIMMA",
+    "section": "Manuscript and supplementary materials",
+    "text": "Manuscript and supplementary materials\nAll bibliography files required for rendering are stored locally in paper/.\nFrom the repository root, render the complete project with:\nquarto render\nOr render individual documents with:\nquarto render paper/pimma.qmd\nquarto render paper/supplementary.qmd"
+  },
+  {
+    "objectID": "index.html#complete-reproduction-workflow",
+    "href": "index.html#complete-reproduction-workflow",
+    "title": "PIMMA",
+    "section": "Complete reproduction workflow",
+    "text": "Complete reproduction workflow\nTo reproduce the analyses from source:\n\nRestore the R environment with renv::restore().\nRun application/cbt-depression/01_preprocessing.R.\nRun application/cbt-depression/02-multiverse.R.\nReproduce the simulation with Rscript simulation/sim.R, or use the included simulation/res-clean.rds file to reproduce the manuscript results without rerunning the full simulation.\nRender the manuscript and supplementary materials with quarto render.\n\nThe precomputed simulation results are provided for convenience because rerunning the complete simulation is substantially more computationally demanding than reproducing the empirical application and rendering the manuscript."
+  }
+]

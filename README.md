@@ -1,5 +1,3 @@
-# PIMMA
-
 Reproducibility materials for the manuscript:
 
 **Post-selection Inference in Multiverse Meta-Analysis: The PIMMA Framework**
@@ -26,9 +24,9 @@ simulation/
 paper/
 ├── pimma.qmd
 ├── supplementary.qmd
-├── pimma.bib
 └── references.bib
 
+pimma.slurm
 renv.lock
 ```
 
@@ -78,23 +76,24 @@ The complete simulation can be reproduced from the repository root with:
 Rscript simulation/sim.R
 ```
 
-The full simulation uses 5,000 replications per condition and is computationally intensive.
+The full simulation uses 5,000 replications per condition, is computationally intensive, and was executed on an HPC cluster using the SLURM submission script (`pimma.slurm`).
 
-When `simulation/sim.R` is sourced interactively in R or RStudio, it uses a reduced number of replications for testing purposes. Use `Rscript simulation/sim.R` to reproduce the full simulation.
+When `simulation/sim.R` is sourced interactively in R or RStudio, it uses a reduced number of replications for testing purposes. Use `Rscript simulation/sim.R` (or submit `pimma.slurm` on a cluster) to reproduce the full simulation.
 
 ## Manuscript and supplementary materials
 
 All bibliography files required for rendering are stored locally in `paper/`.
 
-From the repository root, render the manuscript with:
+From the repository root, render the complete project with:
+
+```bash
+quarto render
+```
+
+Or render individual documents with:
 
 ```bash
 quarto render paper/pimma.qmd
-```
-
-and the supplementary materials with:
-
-```bash
 quarto render paper/supplementary.qmd
 ```
 
@@ -106,7 +105,6 @@ To reproduce the analyses from source:
 2. Run `application/cbt-depression/01_preprocessing.R`.
 3. Run `application/cbt-depression/02-multiverse.R`.
 4. Reproduce the simulation with `Rscript simulation/sim.R`, or use the included `simulation/res-clean.rds` file to reproduce the manuscript results without rerunning the full simulation.
-5. Render `paper/pimma.qmd`.
-6. Render `paper/supplementary.qmd`.
+5. Render the manuscript and supplementary materials with `quarto render`.
 
 The precomputed simulation results are provided for convenience because rerunning the complete simulation is substantially more computationally demanding than reproducing the empirical application and rendering the manuscript.
