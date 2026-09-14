@@ -50,6 +50,7 @@ rsconnect/
 **/*.quarto_ipynb
 
 res*.rds
+!res-clean.rds
 *_cache
 snowflake.log
 # Quarto/LaTeX temporary files
@@ -69,3 +70,6 @@ docs/paper/*_files/
 
 # Editor lock files
 .~lock.*#
+
+# Rsync backup files
+.rsync-backup/
