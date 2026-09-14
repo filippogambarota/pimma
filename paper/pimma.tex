@@ -486,8 +486,7 @@ The more recent \emph{Post-selection Inference in Multiverse Analysis}
 addresses this limitation using sign-flipping score tests and joint
 resampling across specifications. PIMA provides both a global test and
 adjusted inference for individual specifications while controlling the
-Family-Wise Error Rate (FWER). PIMA is also applicable to a wider range
-of outcome types and statistical models than SCA.
+Family-Wise Error Rate (FWER).
 
 Extending PIMA to meta-analysis requires addressing two problems at the
 same time. First, inference within a single meta-analysis can already be
@@ -1588,7 +1587,9 @@ Rejection rates for testing the focal moderator coefficient
 moderator correlation (\(\rho_{XZ}\)), shown as a function of the number
 of studies (\(k\)), baseline heterogeneity (\(\tau_0^2\)), scale
 heterogeneity parameter (\(\zeta\)), and fitted model type
-(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}). Dotted
+(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}). Grey
+shading identifies conditions in which the fitted model type matches the
+heterogeneity structure of the data-generating process. Dotted
 horizontal lines indicate the 95\% Monte Carlo confidence interval
 around nominal \(\alpha = 0.05\). The Wald test is omitted because it
 showed inflated Type I error rates across many simulated conditions
@@ -1629,9 +1630,10 @@ Rejection rates are averaged over sample size per group (\(n\)) and
 moderator correlation (\(\rho_{XZ}\)), shown as a function of the number
 of studies (\(k\)), baseline heterogeneity (\(\tau_0^2\)), scale
 heterogeneity parameter (\(\zeta\)), and fitted model type
-(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}). The
-Wald test is omitted because of its generally inflated Type I error
-rates.}
+(Equal-Effects {[}EE{]} vs.~Random-Effects REML {[}RE--REML{]}). Grey
+shading identifies conditions in which the fitted model type matches the
+heterogeneity structure of the data-generating process. The Wald test is
+omitted because of its generally inflated Type I error rates.}
 
 \centering{
 
@@ -1857,18 +1859,17 @@ labeled non-discriminating rather than being assigned the label of the
 first path encountered.
 
 As a conventional inferential benchmark, we compared PIMMA, combining
-specification-level \texttt{flipmeta} tests with step-down max-\(T\)
+analysis-level \texttt{flipmeta} tests with step-down max-\(T\)
 adjustment, with RVE followed by Holm correction. RVE showed similar
 specification-level Type I error control and power to \texttt{flipmeta}
 in the simulation study, while Holm controls the FWER without requiring
 an estimate of the dependence among tests. This comparison concerns two
 complete inferential pipelines and therefore reflects differences in
-both specification-level inference and multiplicity adjustment.
+both analysis-level inference and multiplicity adjustment.
 
 PIMMA inference was based on \(B = 5,000\) common sign-flipping
 transformations. The same number of transformations was used in the
-sensitivity analysis excluding specifications with fewer than 10
-studies.
+sensitivity analysis excluding analyses with fewer than 10 studies.
 
 \begin{table}
 
@@ -1906,17 +1907,16 @@ DerSimonian--Laird \\
 \begin{figure}
 
 \caption{\label{fig-application-overview}Overview of the CBT depression
-multiverse (\(S = 336\)). The left panel shows the relationship between
-pooled effect-size estimates (Hedges' \(g\)) and adjusted
-\(-\log_{10}(p)\) values from step-down max-\(T\) correction. Points
-distinguish analyses that were not significant, significant only before
-multiplicity adjustment, or significant after step-down max-\(T\)
+multiverse (\(S = 336\) unique analyses). The left panel shows the
+relationship between pooled effect-size estimates (Hedges' \(g\)) and
+adjusted \(-\log_{10}(p)\) values from step-down max-\(T\) correction.
+Points distinguish analyses that were not significant, significant only
+before multiplicity adjustment, or significant after step-down max-\(T\)
 adjustment; the horizontal dotted line marks the \(\alpha = 0.05\)
 threshold. The upper-right panel shows the distribution of pairwise
-correlations among specification-level signed standardized statistics,
-with the dashed vertical line marking the median. The lower-right panel
-shows the distribution of the number of studies included in each
-analysis.}
+correlations among analysis-level signed standardized statistics, with
+the dashed vertical line marking the median. The lower-right panel shows
+the distribution of the number of studies included in each analysis.}
 
 \centering{
 
@@ -1926,69 +1926,59 @@ analysis.}
 
 \end{figure}%
 
-The 336 included specifications differed substantially in the amount of
-evidence included, ranging from 6 to 86 independent studies (median =
-13.5, Q1-Q3 = 9--27). Pooled Hedges' \(g\) estimates also varied,
-ranging from 0.36 to 1.30, with a median of 0.72 (Q1-Q3 = 0.59--0.96).
-Despite this variability, all pooled effect estimates were positive.
+The 336 unique analyses differed substantially in the amount of evidence
+included, ranging from 6 to 86 independent studies (median = 13.5, Q1-Q3
+= 9--27). Pooled Hedges' \(g\) estimates also varied, ranging from 0.36
+to 1.30, with a median of 0.72 (Q1-Q3 = 0.59--0.96). Despite this
+variability, all pooled effect estimates were positive.
 
 The global PIMMA test rejected the global null hypothesis that the
-average effect was zero in all 336 specifications (\(p\) = .00020). This
-provides evidence that the average effect differs from zero in at least
-one specification, but it does not tell us which individual
-specifications remain statistically significant after correcting for
-multiple testing.
+average effect was zero in all 336 unique analyses (\(p\) = .00020).
+This provides evidence that the average effect differs from zero in at
+least one analysis, but it does not tell us which individual analyses
+remain statistically significant after correcting for multiple testing.
 
-At the specification level, 330 of the 336 specifications (98.2\%) had
-an unadjusted \texttt{flipmeta} \(p\)-value \(\leq .05\). After
-step-down max-\(T\) adjustment accounting for dependence among
-specifications, 297 specifications (88.4\%) remained significant
+At the analysis level, 330 of the 336 unique analyses (98.2\%) had an
+unadjusted \texttt{flipmeta} \(p\)-value \(\leq .05\). After step-down
+max-\(T\) adjustment accounting for dependence among analyses, 297
+analyses (88.4\%) remained significant
 (Table~\ref{tbl-inference-comparison};
 Figure~\ref{fig-application-overview}). As a conventional benchmark, RVE
-with Holm adjustment yielded 233 specifications (69.3\%). This
-comparison evaluates the complete PIMMA and RVE--Holm pipelines; it does
-not isolate the contribution of the marginal test from that of the
+with Holm adjustment yielded 233 analyses (69.3\%). This comparison
+evaluates the complete PIMMA and RVE--Holm pipelines; it does not
+isolate the contribution of the marginal test from that of the
 multiplicity adjustment.
 
-The proportion of significant specifications should be interpreted as a
+The proportion of significant analyses should be interpreted as a
 descriptive summary of this particular multiverse, not as an estimate of
 the probability that the effect is present.
 
-The dependence among specification-level signed standardized statistics
+The dependence among analysis-level signed standardized statistics
 varied considerably (Figure~\ref{fig-application-overview}). Pairwise
 correlations had a median of 0.20 (Q1-Q3 = 0.02--0.45), ranging from
--0.04 to 1.00. This is expected because some specifications retain
+-0.04 to 1.00. This is expected because some analyses retain
 substantially different sets of studies, whereas others share the same
 or very similar evidence and differ only in a small number of analytical
 choices. The step-down max-\(T\) procedure uses this dependence
 structure, whereas Holm controls the FWER without explicitly using it.
 
-The sensitivity analysis excluding specifications with fewer than 10
-independent studies included 246 specifications. The global null was
-again rejected (\(p\) = .00020), and 246 specifications remained
-significant after step-down max-\(T\) adjustment. RVE with Holm
-adjustment retained 216 specifications (87.8\%).
+The sensitivity analysis excluding analyses with fewer than 10
+independent studies included 246 analyses. The global null was again
+rejected (\(p\) = .00020), and 246 analyses remained significant after
+step-down max-\(T\) adjustment. RVE with Holm adjustment retained 216
+analyses (87.8\%).
 
 \begin{table}
 
-{\caption{{Specification-level inferential results across the CBT
-depression multiverse (\(S = 336\)), comparing unadjusted and
+{\caption{{Analysis-level inferential results across the CBT depression
+multiverse (\(S = 336\) unique analyses), comparing unadjusted and
 multiplicity-adjusted inference using flipmeta and
 RVE.}{\label{tbl-inference-comparison}}}
 \vspace{-20pt}}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3803}}
-  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3944}}
-  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2254}}@{}}
+\begin{longtable}[]{@{}lcc@{}}
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Method
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Significant specifications
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Percentage (\%)
-\end{minipage} \\
+Method & Significant analyses & Percentage (\%) \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -2022,29 +2012,29 @@ multiplicity across the full multiverse.
 
 The application illustrates that PIMMA answers two different questions:
 whether there is evidence of an effect somewhere in the multiverse, and
-which individual specifications remain statistically significant after
+which individual analyses remain statistically significant after
 correcting for multiple testing. The second question is often more
 informative, because rejecting the global null only shows that the
-effect differs from zero in at least one specification, without
-determining which individual specifications remain statistically
-significant after multiplicity adjustment.
+effect differs from zero in at least one analysis, without determining
+which individual analyses remain statistically significant after
+multiplicity adjustment.
 
 In the CBT example, all pooled estimates were positive, although their
-magnitude varied considerably across specifications. The global null was
-rejected, and most specifications remained significant after step-down
-max-\(T\) correction. The application also shows why accounting for
-dependence is important. Specifications often share studies and
+magnitude varied considerably across the unique analyses. The global
+null was rejected, and most analyses remained significant after
+step-down max-\(T\) correction. The application also shows why
+accounting for dependence is important. Analyses often share studies and
 analytical choices, so their test statistics are correlated, and PIMMA
 incorporates this dependence in the multiplicity adjustment. Compared
 with the conventional RVE--Holm pipeline, which retained 233 significant
-specifications, PIMMA retained 297. Because the two pipelines differ in
-both specification-level inference and multiplicity adjustment, this
-comparison should be interpreted as an overall benchmark rather than as
-an isolated assessment of the adjustment procedures. In the sensitivity
-analysis excluding specifications with fewer than 10 studies, 246 of the
-246 included specifications remained significant after step-down
-max-\(T\) correction, suggesting that the main conclusion was not driven
-by the smallest meta-analytic subsets.
+analyses, PIMMA retained 297. Because the two pipelines differ in both
+analysis-level inference and multiplicity adjustment, this comparison
+should be interpreted as an overall benchmark rather than as an isolated
+assessment of the adjustment procedures. In the sensitivity analysis
+excluding analyses with fewer than 10 studies, 246 of the 246 included
+analyses remained significant after step-down max-\(T\) correction,
+suggesting that the main conclusion was not driven by the smallest
+meta-analytic subsets.
 
 These findings should therefore be interpreted mainly as a demonstration
 of the PIMMA framework, rather than as a definitive reassessment of the

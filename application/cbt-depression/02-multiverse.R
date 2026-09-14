@@ -352,14 +352,14 @@ stopifnot(
 
 names(fitl) <- paste0(
   "mod",
-  seq_along(multi$fitl)
+  seq_along(fitl)
 )
 
 res <- flipmeta(
   fitl,
   id = "study_id",
   B = 5000,
-  extra = multi$multi,
+  extra = analyses,
   progress = FALSE
 )
 
